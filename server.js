@@ -1,47 +1,32 @@
-import express from "express";
-import cors from "cors";
-import dotenv from "dotenv";
+app.post("/analyze", async (req, res) => {
+  try {
+    const { resume } = req.body;
 
-dotenv.config();
+    const { GoogleGenerativeAI } = await import("@google/generative-ai");
 
-const app = express();
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-app.use(cors());
-app.use(express.json());
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-// Test route
-app.get("/", (req, res) => {
-  res.send("Backend is running ✅");
-});
+    const result = await model.generateContent(
+      `Analyze this resume and give:
+      - Strengths
+      - Weaknesses
+      - Suggestions
 
-// Analyze route (NO AI → SAFE)
-app.post("/analyze", (req, res) => {
-  const { resume } = req.body;
+      Resume:
+      ${resume}`
+    );
 
-  if (!resume) {
-    return res.status(400).json({ error: "Resume is required" });
+    const response = await result.response;
+    const text = response.text();
+
+    res.json({ result: text });
+
+  } catch (error) {
+    console.error(error);
+    res.json({
+      result: "AI failed but backend working ✅",
+    });
   }
-
-  // Fake AI response
-  res.json({
-    result: `
-Strengths:
-- Good technical skills
-- Clear project experience
-
-Weaknesses:
-- Limited real-world exposure
-
-Suggestions:
-- Add more projects
-- Improve advanced skills
-    `,
-  });
-});
-
-// Render port
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-  console.log("Server running on port " + PORT);
 });
