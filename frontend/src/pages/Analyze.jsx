@@ -1,5 +1,4 @@
-const res = await fetch(
-  "https://smarthire-backend-production-9091.up.railway.app/analyze",
+const res = await fetch("https://smarthire-backend-production-9091.up.railway.app/analyze", 
   {
     method: "POST",
     headers: {
